@@ -5,21 +5,23 @@ clc
 
 %carico i limiti di giunto, servono per la verifica dei link trovati
 load('joint_lim2.mat');
-%definisco le lunghezze dei link se voglio fare la prova singola
-% % a1=;
-% % a2=;
-% % a3=;
-% % a4=;
+%definisco le lunghezze dei link se voglio fare la prova singola --> quaterna vincente 15 16 15 7
+a1=15;
+a2=16;
+a3=15;
+a4=7;
 %carico la traiettoria desiderata contenente anche il vettore link_scelti
 load('traiettoria_giusta2.mat');
 %definisco un ciclo for per provare ogni link che ho trovato da
 %ottimizza_link
-for z=1:size(link_scelti)
+
+%% Test
+%for z=1:size(link_scelti)
 %definisco le dimensioni di link prese in considerazione
-a1=link_scelti(z,1);
-a2=link_scelti(z,2);
-a3=link_scelti(z,3);
-a4=link_scelti(z,4);
+%a1=link_scelti(z,1);
+%a2=link_scelti(z,2);
+%a3=link_scelti(z,3);
+%a4=link_scelti(z,4);
 
 
 tf=15; %definisco il tempo finale
@@ -52,7 +54,7 @@ XY_IK2=[];
 XY_IK3=[];
 XY_IK4=[];
 XY_err=[]; %il vettore errore
-joints=[]; %il vettore dove andrò ad inserire le variabili di giunto per ogni punto della traiettoria 
+joints=[]; %il vettore dove andrÃ² ad inserire le variabili di giunto per ogni punto della traiettoria 
 
 
 for i=1:size(XY,1)
@@ -76,8 +78,8 @@ for i=1:size(XY,1)
 end
 %vado a definirmi il vettore minimoq4, in cui mi salvo per ogni
 %combinazione il valore minimo che q4 tocca
-minimoq4(z)=min(joints(:,4));
-end
+%minimoq4(z)=min(joints(:,4));
+%end
 
     
 
@@ -87,19 +89,22 @@ end
 figure(1)
 %subplot(4,1,1)
 plot(T,rad2deg(joints(:,1)),'-b','Linewidth',4)
+title('giunto1'); 
 
 figure(3)
 %subplot(4,1,2)
 plot(T,rad2deg(joints(:,2)),'-b','Linewidth',4)
+title('giunto2'); 
 
 figure(4)
 %subplot(4,1,3)
 plot(T,rad2deg(joints(:,3)),'-b','Linewidth',4)
+title('giunto3'); 
 
 figure(6)
 %subplot(4,1,4)
 plot(T,rad2deg(joints(:,4)),'-b','Linewidth',4)
-
+title('giunto4'); 
 
 
 figure(2)
