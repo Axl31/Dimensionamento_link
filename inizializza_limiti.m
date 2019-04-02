@@ -10,6 +10,6 @@ function [joint_lim, link_lim] = inizializza_limiti()
     link_lim=[15 20; 
         10 18;
         8 18; 
-        8 18];
+        7 18];
 
 end
