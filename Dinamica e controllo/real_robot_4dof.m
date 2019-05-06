@@ -8,15 +8,16 @@ clc
 mylego = legoev3('USB');% vado a dire che il mio dispositivo è collegato
 % tramite USB al computer
 
-writeLCD(mylego,'Buongiorno ragazzi!',2,1)
 
 mymotor1 = motor(mylego, 'A');% specifico L'ID della mia unità di controllo e la porta a cui è collegato
 mymotor2 = motor(mylego, 'B');
 mymotor3 = motor(mylego, 'C');
+mymotor4 = motor(mylego, 'D');
 
 resetRotation(mymotor1);% resetto gli encoder
 resetRotation(mymotor2);
 resetRotation(mymotor3);
+resetRotation(mymotor4);
 
 clearLCD(mylego);% cancello tutto quello che ho sullo schermo
 
@@ -25,12 +26,14 @@ state = true; % variabile di controllo del loop che faccio dopo
 mymotor1.Speed =0.0;
 mymotor2.Speed =0.0;
 mymotor3.Speed =0.0;
+mymotor4.Speed =0.0;
 
-Q=[0 0 0];
+Q=[0 0 0 0];
 
 start(mymotor1);
 start(mymotor2);
 start(mymotor3);
+start(mymotor4);
 
 
 %% Variables initialization
@@ -40,19 +43,26 @@ time=0.0;
 i=2;
 start_time=tic;
 
-Q0=[0 ,0, 0];
-Q1=[3*pi ,3*pi, 3*pi]; % 3/2pi
-Qides=[0; 0; 0];% integrale della posizione desiderata
-Qi=[0; 0; 0];
+Q0=[0 ,0, 0, 0];
+Qd=Q0; %aggiunta mia 
+Q1=[3*pi ,3*pi, 3*pi, 3*pi]; % 3/2pi
+Qides=[0; 0; 0;0];% integrale della posizione desiderata
+Qi=[0; 0; 0;0];
 
 q1_prev=Q0(1);% posizione del giunto nell'istante precedente
 q2_prev=Q0(2);
 q3_prev=Q0(3);
+q4_prev=Q0(4);
 
 Q_=[];
 Qdes_=[];
 
-tf=5;
+tf=15;% abbiamo messo quello della nostra traiettoria% 5
+[punto, tempo, phi, circonferenza1, circonferenza2]=inizializza_simulazione();
+a1=0.15;
+a2=0.16;
+a3=0.15;
+a4=0.07;
 
 %% Control loop
 while(state) % termino il cilco quando state diventa false e lo faccio quando premo un pulsante
@@ -62,13 +72,28 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
     
     %% Joint trajectory planner
     if time<tf
-    [qdes1 qdotdes1]=joint_planner([Q0(1) Q1(1) 0 tf time]); % polinomio del quinto ordine
-    [qdes2 qdotdes2]=joint_planner([Q0(2) Q1(2) 0 tf time]); 
-    [qdes3 qdotdes3]=joint_planner([Q0(3) Q1(3) 0 tf time]); 
+%     [qdes1 qdotdes1]=joint_planner([Q0(1) Q1(1) 0 tf time]); % polinomio del quinto ordine
+%     [qdes2 qdotdes2]=joint_planner([Q0(2) Q1(2) 0 tf time]); 
+%     [qdes3 qdotdes3]=joint_planner([Q0(3) Q1(3) 0 tf time]); 
+%     [qdes4 qdotdes4]=joint_planner([Q0(4) Q1(4) 0 tf time]); 
+      [xd,xdd,phi,phit]=planner_TOAD(punto, tempo, phi, t, circonferenza1, circonferenza2);
+      Qddot = inv_cin_psd(Qd,xd,xdd,[a1, a2, a3, a4]);
+      Qd=Qd+Qddot*dt;
+      
+      qdes1=Qd(1);
+      qdes2=Qd(2);
+      qdes3=Qd(3);
+      qdes4=Qd(4);
+      qdotdes1=Qddot(1);
+      qdotdes2=Qddot(2);
+      qdotdes3=Qddot(3);
+      qdotdes4=Qddot(4);
+
+        
     end
     
-    Qdes=[qdes1; qdes2; qdes3];
-    Qdotdes=[qdotdes1; qdotdes2; qdotdes3];
+    Qdes=[qdes1; qdes2; qdes3; qdes4];
+    Qdotdes=[qdotdes1; qdotdes2; qdotdes3; qdotdes4];
     Qides=Qides+Qdes*dt;
     Qdes_=[Qdes_;Qdes'];
     
@@ -81,6 +106,7 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
         stop(mymotor1);
         stop(mymotor2);
         stop(mymotor3);
+        stop(mymotor4);
     end
     
     %% Read motor angles
@@ -88,15 +114,17 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
     q1= deg2rad(double(readRotation(mymotor1)));
     q2= deg2rad(double(readRotation(mymotor2)));
     q3= deg2rad(double(readRotation(mymotor3)));
+    q4= deg2rad(double(readRotation(mymotor4)));
     
-    Q=[q1; q2; q3];
+    Q=[q1; q2; q3; q4];
     Q_=[Q_;Q'];
     
     q1_dot=(q1-q1_prev)/dt;
     q2_dot=(q2-q2_prev)/dt;
     q3_dot=(q3-q3_prev)/dt;
+    q4_dot=(q4-q4_prev)/dt;
     
-    Qdot=[q1_dot; q2_dot; q3_dot];
+    Qdot=[q1_dot; q2_dot; q3_dot; q4_dot];
     
     Qi=Qi+Q*dt; % integrale della posizione nello spazio dei giunti
     
@@ -110,6 +138,7 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
     mymotor1.Speed = command(1);
     mymotor2.Speed = command(2);
     mymotor3.Speed = command(3);
+    mymotor4.Speed = command(4);
     
     %% Write joint angles on the brick LCD
     % scrivo il valore delle variabili di giunto sullo schermo dell'unità
@@ -124,12 +153,17 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
     
     writeLCD(mylego,'angle3=',4,1)
     str_f = sprintf('%0.5f',q3);
-    writeLCD(mylego,str_f,4,8)
+    writeLCD(mylego,str_f,4,8)  
+    
+    writeLCD(mylego,'angle4=',5,1)
+    str_f = sprintf('%0.5f',q4);
+    writeLCD(mylego,str_f,5,8)
     
     %% Save previous joint angles
     q1_prev=q1;
     q2_prev=q2;
     q3_prev=q3;
+    q4_prev=q4;
     
     i=i+1;
     
@@ -145,7 +179,7 @@ Qdes_=Qdes_(1:end/sample_number:end,:);
 T=T(1:(end-1)/sample_number:end-1);
 
 %% Plot
-figure(1)
+    figure(1)
     hold on
     plot(T,Qdes_(:,1),'-r','Linewidth',4)
     plot(T,Q_(:,1),'-b','Linewidth',4)
@@ -160,4 +194,10 @@ figure(1)
     hold on
     plot(T,Qdes_(:,3),'-r','Linewidth',4)
     plot(T,Q_(:,3),'-b','Linewidth',4)
+    
+    
+    figure(4)
+    hold on
+    plot(T,Qdes_(:,4),'-r','Linewidth',4)
+    plot(T,Q_(:,4),'-b','Linewidth',4)
 

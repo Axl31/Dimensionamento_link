@@ -1,7 +1,8 @@
-clear all
-close all
-clc
+% clear all
+% close all
+% clc
 
+function [] = test_dynamic_model()
 %% Variables initialization
 a1=0.15;
 a2=0.16;
@@ -13,7 +14,7 @@ time=0.0;
 i=2;
 start_time=tic;% prende il valore temporale nell'istante di tempo in cui viene eseguita la riga di codice
 
-Q=[0;0;0;0];
+Q=[pi/6;pi/6;pi/6;pi/6];%0;0;0;0
 Qdot=[0;0;0;0];
 Q2dot=[0;0;0;0];
 
@@ -66,6 +67,7 @@ end
 
 
 figure(1)
+title('Simulazione robot soggetto a gravità')
 for i=1:40:size(XY1,1)
     axis equal      
     plot([0 XY1(i,1)],[0 XY1(i,2)],'-r','Linewidth',4)
@@ -89,4 +91,4 @@ end
 if(MAKE_VIDEO)
     close(motion);
 end
-
+end
