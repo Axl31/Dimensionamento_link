@@ -4,14 +4,14 @@
 
 function [Q_] = simulation_4dof()
     %% Variables initialization
-    a1=0.15;
-    a2=0.16;
-    a3=0.15;
-    a4=0.07;
+    a1=15;
+    a2=16;
+    a3=15;
+    a4=7;
     
 
-    XY_iniziale=[0.35 0.25 0]; % il nostro punto B in metri
-    XYf=[0.35 0.25 pi/6];% è sempre il nostro punto B ma con l'orientamento finale
+    XY_iniziale=[35 25 0]; % il nostro punto B in metri
+    XYf=[35 25 pi/6];% è sempre il nostro punto B ma con l'orientamento finale
 
     Qides=[0;0;0;0];
     % devo mettere il primo valore di q4 usato per il calcolo della traiettoria
@@ -70,7 +70,7 @@ function [Q_] = simulation_4dof()
         traiettoria = [traiettoria; xd];
         XYdot_=xdd;
         %theta=pi/3;
-        XY=[XY_'; phi];% XY_iniziale(3)];
+        XY=[XY_'; phi];% XY_iniziale(3)]
         XYdot=[0;0;0];
         %% Online inverse kinematics
 
@@ -83,10 +83,16 @@ function [Q_] = simulation_4dof()
         XY_IK=cinematica_diretta_4gdl(Qdes,[a1,a2,a3,a4]);
         XY_err_IK=[XY_err_IK; XY_IK(1:3)'-XY(1:3)'];%XY_IK è quella desiderata,l'altra quella effettiva
         %% PID controller
+        
+%         K=[1 1 1 1];
+%         D=[0.35 0.1 0.1 0.08];
+%         I=[0.4 0.35 0.1 0];
 
-        K=[1 1 1 1];
-        D=[0.35 0.1 0.1 0.08];
-        I=[0.4 0.35 0.1 0];
+
+        K=[0.4 0.4 0.3 0.3];% =[0.3 0.25 0.2 0.3];%20 10 2 1
+        D=[0.01 0.005 0 0.002];%=[0.05 0.02 0 0.005]%2 1 0.8 0.4
+        I=[0.001 0.001 0.001 0];%=[0.08 0.02 0.02 0]%8 4 0.8 0.4
+
 
         tau= PID_controller(Q, Qdot, Qi, Qdes, Qdotdes, Qides, K, D, I);
         if isnan(tau(1))
@@ -94,6 +100,7 @@ function [Q_] = simulation_4dof()
             i
         end
         %% Robot dynamic model
+        
         Q2dot=dynamic_model_4dof(tau,Q, Qdot);
         Qdot=Qdot+Q2dot*dt;
         Q=Q+Qdot*dt;

@@ -21,6 +21,7 @@ tempo.finale2 = tf;
 
 %definisco l'orientamento: nota in questo caso il phi iniziale indica
 %l'orientamento finale, c'è una discrepanza di notazione.
+phi=struct;
 phi.iniziale = 0; % pi/6
 phi.finale = pi/6; %0
 
