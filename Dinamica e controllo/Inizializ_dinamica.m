@@ -22,37 +22,37 @@ l4=link(4);
 %Rotore motori
 % Si assume che il rotore del motore sia un cilindro 
 %di altezza h e raggio r
-h_m=0.01;%0.02;
-r_m=0.0115/2;%0.015;
+h_m=10;%[cm]0.02;
+r_m=1.15/2;%[cm]0.015;
 
-h_M=0.024;
-r_M=0.0116/2;
+h_M=2.4;%[cm]
+r_M=1.16/2;%[cm]
 
-%Masse link [kg]
+%Masse link [g]
 
-ml_1=0.030;
-ml_2=0.030;
-ml_3=0.030;
-ml_4=0.014;
+ml_1=30;
+ml_2=30;
+ml_3=30;
+ml_4=14;
 
-%Masse statori motori [kg]
-mr_1=0.107;
-mr_2=0.107;
-mr_3=0.070;
-mr_4=0.070;
+%Masse statori motori [g]
+mr_1=107;
+mr_2=107;
+mr_3=70;
+mr_4=70;
 
-%Masse totali Link [kg]
+%Masse totali Link [g]
 M_1=ml_1+mr_2;
 M_2=ml_2+mr_3;
 M_3=ml_3+mr_4;
 M_4=ml_4;
 masse_link = [M_1, M_2, M_3, M_4];
 
-%Masse motori [kg]
-M_m1=0.085;
-M_m2=0.085;
-M_m3=0.042;
-M_m4=0.042;
+%Masse motori [g]
+M_m1=85;
+M_m2=85;
+M_m3=42;
+M_m4=42;
 masse_motori = [M_m1, M_m2, M_m3, M_m4];
 
 
@@ -63,12 +63,12 @@ kr3=36/22;
 kr4=36/22;
   
 
-%% Centri di massa dei link 
+%% Centri di massa dei link [cm]
 
-COM_1=[0.08572-l1; 0; 0];     %Terna1
-COM_2=[0.0115-l2; 0; 0];      %Terna2
-COM_3=[0.0115-l3; 0; 0];     %Terna3
-COM_4=[0.003-l4; 0; 0];
+COM_1=[8.572-l1; 0; 0];     %Terna1
+COM_2=[1.15-l2; 0; 0];      %Terna2
+COM_3=[1.15-l3; 0; 0];     %Terna3
+COM_4=[3-l4; 0; 0];
 
 %Centri di massa dei Motori/Rotori rispetto alla terna precedente
 COM_m1=[0; 0; 0];           %Terna 0
@@ -77,35 +77,35 @@ COM_m3=[0; 0; 0];           %Terna 2
 COM_m4=[0; 0; 0];           %Terna 3
 
 
-%% TENSORI INERZIA LINK [kgm^2]
+%% TENSORI INERZIA LINK [gcm^2]
 %Link 1 rispetto Terna 1
 
 % I_1=[1/12*M_1*(a^2+b^2)          0                   0;
 %             0           1/12*M_1*(b^2+l1^2)          0;
 %             0                    0          1/12*M_1*(a^2+l1^2)];
 
-I_1= diag([0,0,3.21e-4]);
+I_1= diag([0,0,3210]);
 
 % %Link 2 rispetto Terna 2
 % I_2=[1/12*M_2*(a^2+b^2)          0                   0;
 %             0           1/12*M_2*(b^2+l2^2)          0;
 %             0                    0          1/12*M_2*(a^2+l2^2)];
 
-I_2= diag([0,0,3.13e-4]);
+I_2= diag([0,0,3130]);
 
 % %Link 3 Terna 3
 % I_3=[1/12*M_3*(a^2+b^2)          0                   0;
 %             0           1/12*M_3*(b^2+l3^2)          0;
 %             0                    0          1/12*M_3*(a^2+l3^2)];
 
-I_3= diag([0,0,3.13e-4]);
+I_3= diag([0,0,3130]);
         
 %Link 4 Terna 4
 % I_4=[1/12*M_4*(a^2+b^2)          0                   0;
 %             0           1/12*M_4*(b^2+l4^2)          0;
 %             0                    0          1/12*M_4*(a^2+l4^2)];
  
-I_4= diag([0,0,1.05e-5]);
+I_4= diag([0,0,105]);
 
 % Inerzia_link  = struct;
 % Inerzia_link.I_1=I_1;
@@ -116,7 +116,7 @@ I_4= diag([0,0,1.05e-5]);
 
 
 
-%% Tensori di inerzia dei Motori [kgm^2]
+%% Tensori di inerzia dei Motori [gcm^2]
 %Motore1 rispetto Terna 0
 I_m1_b=[1/12*M_m1*(h_M^2+3*r_M^2)         0                 0;
                 0             1/12*M_m1*(h_M^2+3*r_M^2)     0;
