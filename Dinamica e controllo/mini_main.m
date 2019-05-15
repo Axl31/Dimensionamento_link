@@ -5,10 +5,10 @@ clc
 
 
 
-% link=[0.15, 0.16, 0.15 ,0.07];
-% [JL,JM,Inerzia_link,Inerzia_motori,masse_link,masse_motori,Q,Q_dot,g0]= Inizializ_dinamica(link);
-% [B,C,G]= Calcolo_matrici_dinamica_4DoF(JL,JM,Inerzia_link,Inerzia_motori,masse_link,masse_motori,Q,Q_dot,g0);
- 
+%  link=[15, 16, 15 ,7];
+%  [JL,JM,Inerzia_link,Inerzia_motori,masse_link,masse_motori,Q,Q_dot,g0]= Inizializ_dinamica(link);
+%  [B,C,G]= Calcolo_matrici_dinamica_4DoF(JL,JM,Inerzia_link,Inerzia_motori,masse_link,masse_motori,Q,Q_dot,g0);
+
 load('joints.mat');
 
 
