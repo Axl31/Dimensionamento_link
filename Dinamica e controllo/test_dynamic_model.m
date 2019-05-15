@@ -4,10 +4,10 @@
 
 function [] = test_dynamic_model()
 %% Variables initialization
-a1=0.15;
-a2=0.16;
-a3=0.15;
-a4=0.07;
+a1=15;
+a2=16;
+a3=15;
+a4=7;
 
 T(1)=0.0;
 time=0.0;

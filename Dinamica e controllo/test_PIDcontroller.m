@@ -4,10 +4,10 @@
 
 function []= test_PIDcontroller(joints)
     %% Variables initialization
-    a1=0.15;
-    a2=0.16;
-    a3=0.15;
-    a4=0.07;
+    a1=15;
+    a2=16;
+    a3=15;
+    a4=7;
     %load('joints.mat');
 
 
@@ -37,7 +37,7 @@ function []= test_PIDcontroller(joints)
     start_time=tic;
 
     %% Control loop
-    while(time<15)  
+    while(time<15)%15  
     time=toc(start_time);    
     T(i)=time; 
     dt=T(i)-T(i-1);
@@ -45,9 +45,9 @@ function []= test_PIDcontroller(joints)
 
     %% PID controller
 
-    K=[1 1 1 1];%20 10 2 1
-    D=[0.1 0.1 0.1 0.1];%2 1 0.8 0.4
-    I=[0.1 0.1 0.1 0];%8 4 0.8 0.4
+    K=[0.01 0.01 0.01 0.01];%20 10 2 1
+    D=[0.2 0.2 0.2 0.2]*0.01;%2 1 0.8 0.4
+    I=[0.5 0.1 0.1 0.1]*0.01;%8 4 0.8 0.4
 
     tau= PID_controller(Q, Qdot, Qi, Qdes, Qdotdes, Qides, K, D, I);
 
@@ -77,10 +77,10 @@ function []= test_PIDcontroller(joints)
     Q_=Q_(1:floor(end/sample_number):end,:);
     T=T(1:floor((end-1)/sample_number):end-1);
 
-    Qdes1_=ones(length(Q_(:,1)))*Qdes(1);
-    Qdes2_=ones(length(Q_(:,2)))*Qdes(2);
-    Qdes3_=ones(length(Q_(:,3)))*Qdes(3);
-    Qdes4_=ones(length(Q_(:,4)))*Qdes(4);
+    Qdes1_=ones(length(Q_(:,1)),1)*Qdes(1);
+    Qdes2_=ones(length(Q_(:,2)),1)*Qdes(2);
+    Qdes3_=ones(length(Q_(:,3)),1)*Qdes(3);
+    Qdes4_=ones(length(Q_(:,4)),1)*Qdes(4);
 
     %% Plot
     figure(1)
@@ -88,28 +88,28 @@ function []= test_PIDcontroller(joints)
     plot(T,Q_(:,1),'-b','Linewidth',4)
     hold on
     plot(T,Qdes1_,'-r','Linewidth',4)
-    title('Andamento desiderato Vs effettivo giunto 1');
+    title('Andamento effettivo Vs desiderato giunto 1');
     legend('Q effettivo', 'Q desiderato');
 
     subplot(4,1,2)
     plot(T,Q_(:,2),'-b','Linewidth',4)
     hold on
     plot(T,Qdes2_,'-r','Linewidth',4)
-    title('Andamento desiderato Vs effettivo giunto 2');
+    title('Andamento effettivo Vs desiderato giunto 2');
     legend('Q effettivo', 'Q desiderato');
 
     subplot(4,1,3)
     plot(T,Q_(:,3),'-b','Linewidth',4)
     hold on
     plot(T,Qdes3_,'-r','Linewidth',4)
-    title('Andamento desiderato Vs effettivo giunto 3');
+    title('Andamento effettivo Vs desiderato giunto 3');
     legend('Q effettivo', 'Q desiderato');
 
     subplot(4,1,4)
     plot(T,Q_(:,4),'-b','Linewidth',4)
     hold on
     plot(T,Qdes4_,'-r','Linewidth',4)
-    title('Andamento desiderato Vs effettivo giunto 4');
+    title('Andamento effettivo Vs desiderato giunto 4');
     legend('Q effettivo', 'Q desiderato');
 
 end
