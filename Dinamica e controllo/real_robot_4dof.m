@@ -45,7 +45,8 @@ start_time=tic;
 
 Q0=[0 ,0, 0, 0];
 Qd=Q0; %aggiunta mia 
-Q1=[3*pi ,3*pi, 3*pi, 3*pi]; % 3/2pi
+%Q1=[3*pi ,3*pi, 3*pi, 3*pi]; % 3/2pi % a noi non serve, serviva ai prof
+%per la traiettoria a segmento
 Qides=[0; 0; 0;0];% integrale della posizione desiderata
 Qi=[0; 0; 0;0];
 
@@ -59,10 +60,10 @@ Qdes_=[];
 
 tf=15;% abbiamo messo quello della nostra traiettoria% 5
 [punto, tempo, phi, circonferenza1, circonferenza2]=inizializza_simulazione();
-a1=0.15;
-a2=0.16;
-a3=0.15;
-a4=0.07;
+a1=15;
+a2=16;
+a3=15;
+a4=7;
 
 %% Control loop
 while(state) % termino il cilco quando state diventa false e lo faccio quando premo un pulsante
@@ -129,9 +130,9 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
     Qi=Qi+Q*dt; % integrale della posizione nello spazio dei giunti
     
     %% PID controller    
-    K=[70 70 12]; % 70 70 12
-    D=[2 2 0.9];
-    I=[0.0 0.0 0]; % possiamo anche settare a zero il controllo integrale se non serve
+    K=[70 70 12 12]; % 70 70 12
+    D=[2 2 0.9 0.9];
+    I=[0.0 0.0 0 0]; % possiamo anche settare a zero il controllo integrale se non serve
     command=PID_controller(Q, Qdot, Qi, Qdes, Qdotdes, Qides, K, D, I);
     % command sarà di fatto una velocità. 
     
@@ -180,24 +181,32 @@ T=T(1:(end-1)/sample_number:end-1);
 
 %% Plot
     figure(1)
-    hold on
+    hold on    
+    plot(T,Q_(:,1),'-b','Linewidth',4)    
     plot(T,Qdes_(:,1),'-r','Linewidth',4)
-    plot(T,Q_(:,1),'-b','Linewidth',4)
+    title('Andamento effettivo Vs desiderato giunto 1');
+    legend('Q effettivo', 'Q desiderato');
     %  plot(time,q4,'*g','Linewidth',4)
     
     figure(2)
     hold on
     plot(T,Qdes_(:,2),'-r','Linewidth',4)
     plot(T,Q_(:,2),'-b','Linewidth',4)
+    title('Andamento effettivo Vs desiderato giunto 2');
+    legend('Q effettivo', 'Q desiderato');
     
     figure(3)
     hold on
     plot(T,Qdes_(:,3),'-r','Linewidth',4)
-    plot(T,Q_(:,3),'-b','Linewidth',4)
+    plot(T,Q_(:,3),'-b','Linewidth',4)   
+    title('Andamento effettivo Vs desiderato giunto 3');
+    legend('Q effettivo', 'Q desiderato');
     
     
     figure(4)
     hold on
     plot(T,Qdes_(:,4),'-r','Linewidth',4)
     plot(T,Q_(:,4),'-b','Linewidth',4)
+    title('Andamento effettivo Vs desiderato giunto 4');
+    legend('Q effettivo', 'Q desiderato');
 

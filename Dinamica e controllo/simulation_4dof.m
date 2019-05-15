@@ -89,7 +89,7 @@ function [Q_] = simulation_4dof()
 %         I=[0.4 0.35 0.1 0];
 
 
-        K=[0.4 0.4 0.3 0.3];% =[0.3 0.25 0.2 0.3];%20 10 2 1
+        K=[0.4 0.4 0.3 0.1];% =[0.3 0.25 0.2 0.3];%20 10 2 1
         D=[0.01 0.005 0 0.002];%=[0.05 0.02 0 0.005]%2 1 0.8 0.4
         I=[0.001 0.001 0.001 0];%=[0.08 0.02 0.02 0]%8 4 0.8 0.4
 
@@ -142,28 +142,28 @@ function [Q_] = simulation_4dof()
     plot(T,Q_(:,1),'-b','Linewidth',4)
     hold on
     plot(T,Qdes_(:,1),'-r','Linewidth',4)
-    title('Andamento desiderato Vs effettivo giunto 1');
+    title('Andamento effettivo Vs desiderato giunto 1');
     legend('Q effettivo', 'Q desiderato');
 
     subplot(4,1,2)
     plot(T,Q_(:,2),'-b','Linewidth',4)
     hold on
     plot(T,Qdes_(:,2),'-r','Linewidth',4)
-    title('Andamento desiderato Vs effettivo giunto 2');
+    title('Andamento effettivo Vs desiderato giunto 2');
     legend('Q effettivo', 'Q desiderato');
 
     subplot(4,1,3)
     plot(T,Q_(:,3),'-b','Linewidth',4)
     hold on
     plot(T,Qdes_(:,3),'-r','Linewidth',4)
-    title('Andamento desiderato Vs effettivo giunto 3');
+    title('Andamento effettivo Vs desiderato giunto 3');
     legend('Q effettivo', 'Q desiderato');
 
     subplot(4,1,4)
     plot(T,Q_(:,4),'-b','Linewidth',4)
     hold on
     plot(T,Qdes_(:,4),'-r','Linewidth',4)
-    title('Andamento desiderato Vs effettivo giunto 4');
+    title('Andamento effettivo Vs desiderato giunto 4');
     legend('Q effettivo', 'Q desiderato');
 
 
