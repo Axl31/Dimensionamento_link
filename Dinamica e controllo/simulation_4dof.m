@@ -89,8 +89,8 @@ function [Q_] = simulation_4dof()
 %         I=[0.4 0.35 0.1 0];
 
 
-        K=[50000 15000 1000 20];
-        D=[0 0 0 0];
+        K=[9000 1000 1000 300];% 18500[16900 2000 1000 300]%[50000 15000 1000 20]
+        D=[0 0 0 0];%[0 0 0 100]
         I=[0 0 0 0];
 
 
@@ -138,36 +138,39 @@ function [Q_] = simulation_4dof()
 
     %% Plot
     figure(1)
-    subplot(4,1,1)
-    plot(T,Q_(:,1),'-b','Linewidth',4)
+    %subplot(4,1,1)
+    plot(T,rad2deg(Q_(:,1)),'-b','Linewidth',4)
     hold on
-    plot(T,Qdes_(:,1),'-r','Linewidth',4)
+    plot(T,rad2deg(Qdes_(:,1)),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 1');
     legend('Q effettivo', 'Q desiderato');
 
-    subplot(4,1,2)
-    plot(T,Q_(:,2),'-b','Linewidth',4)
+    figure(2)
+    %subplot(4,1,2)
+    plot(T,rad2deg(Q_(:,2)),'-b','Linewidth',4)
     hold on
-    plot(T,Qdes_(:,2),'-r','Linewidth',4)
+    plot(T,rad2deg(Qdes_(:,2)),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 2');
     legend('Q effettivo', 'Q desiderato');
 
-    subplot(4,1,3)
-    plot(T,Q_(:,3),'-b','Linewidth',4)
+    figure(3)
+    %subplot(4,1,3)    
+    plot(T,rad2deg(Q_(:,3)),'-b','Linewidth',4)
     hold on
-    plot(T,Qdes_(:,3),'-r','Linewidth',4)
+    plot(T,rad2deg(Qdes_(:,3)),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 3');
     legend('Q effettivo', 'Q desiderato');
 
-    subplot(4,1,4)
-    plot(T,Q_(:,4),'-b','Linewidth',4)
+    figure(4)
+    %subplot(4,1,4)
+    plot(T,rad2deg(Q_(:,4)),'-b','Linewidth',4)
     hold on
-    plot(T,Qdes_(:,4),'-r','Linewidth',4)
+    plot(T,rad2deg(Qdes_(:,4)),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 4');
     legend('Q effettivo', 'Q desiderato');
 
 
-    figure(2)
+    figure(5)
     subplot(3,1,1)
     plot(T,XY_err_IK(:,1),'-b','Linewidth',4)
     title(' Errore su x');
@@ -188,7 +191,7 @@ function [Q_] = simulation_4dof()
     end
 
 
-    figure(3)
+    figure(6)
     title('Simulazione movimento robot')
     passo = 40;
     for i=1:passo:size(XY1,1)

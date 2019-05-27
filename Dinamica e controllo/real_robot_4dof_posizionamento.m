@@ -1,8 +1,29 @@
+close all
+clear all
+clc
+
+%% Lego EV3 Mindstorm initialization
+
+%mylego2 = legoev3('192.168.137.79');
+mylego = legoev3('USB');% vado a dire che il mio dispositivo è collegato
+% tramite USB al computer
+
+
+mymotor1 = motor(mylego, 'A');% specifico L'ID della mia unità di controllo e la porta a cui è collegato
+mymotor2 = motor(mylego, 'B');
+mymotor3 = motor(mylego, 'C');
+mymotor4 = motor(mylego, 'D');
+
+resetRotation(mymotor1);% resetto gli encoder
+resetRotation(mymotor2);
+resetRotation(mymotor3);
+resetRotation(mymotor4);
 
 clearLCD(mylego);% cancello tutto quello che ho sullo schermo
 
 
 state = true; % variabile di controllo del loop che faccio dopo
+controllo= true;
 mymotor1.Speed =0.0;
 mymotor2.Speed =0.0;
 mymotor3.Speed =0.0;
@@ -23,10 +44,8 @@ time=0.0;
 i=2;
 start_time=tic;
 
-Q0=(-1)*[-0.123, 0.977, 0.542, -1.396];% il nostro punto B
-Qd=Q0; %aggiunta mia 
-%Q1=[3*pi ,3*pi, 3*pi, 3*pi]; % 3/2pi % a noi non serve, serviva ai prof
-%per la traiettoria a segmento
+Q0=[0, 0, 0, 0]; 
+Q1=(-1)*[-0.123, 0.977, 0.542, -1.396]; % è il nostro punto B
 Qides=[0; 0; 0;0];% integrale della posizione desiderata
 Qi=[0; 0; 0;0];
 
@@ -38,39 +57,27 @@ q4_prev=Q0(4);
 Q_=[];
 Qdes_=[];
 
-tf=15;% abbiamo messo quello della nostra traiettoria% 5
-[punto, tempo, PHI, circonferenza1, circonferenza2]=inizializza_simulazione();
+tf=5;% abbiamo messo per il posizionamento 5 secondi
+
 a1=15;
 a2=16;
 a3=15;
 a4=7;
 
 %% Control loop
-while(state) % termino il cilco quando state diventa false e lo faccio quando premo un pulsante
+while(state && controllo) % termino il cilco quando state diventa false e lo faccio quando premo un pulsante
    time=toc(start_time);
     T(i)=time;
     dt=T(i)-T(i-1);
     
+    
     %% Joint trajectory planner
     if time<tf
-%     [qdes1 qdotdes1]=joint_planner([Q0(1) Q1(1) 0 tf time]); % polinomio del quinto ordine
-%     [qdes2 qdotdes2]=joint_planner([Q0(2) Q1(2) 0 tf time]); 
-%     [qdes3 qdotdes3]=joint_planner([Q0(3) Q1(3) 0 tf time]); 
-%     [qdes4 qdotdes4]=joint_planner([Q0(4) Q1(4) 0 tf time]); 
-      [xd,xdd,phi,phit]=planner_TOAD(punto, tempo, PHI, time, circonferenza1, circonferenza2);
-      Qddot = inv_cin_psd(Qd,[xd,phi]',[xdd,phit]',[a1, a2, a3, a4]);
-      Qd=Qd+Qddot*dt;
-      
-      qdes1=Qd(1);
-      qdes2=Qd(2);
-      qdes3=Qd(3);
-      qdes4=Qd(4);
-      qdotdes1=Qddot(1);
-      qdotdes2=Qddot(2);
-      qdotdes3=Qddot(3);
-      qdotdes4=Qddot(4);
-
-        
+     [qdes1, qdotdes1]=joint_planner(Q0(1), Q1(1), 0, tf, time); % polinomio del quinto ordine
+     [qdes2, qdotdes2]=joint_planner(Q0(2), Q1(2), 0, tf, time); 
+     [qdes3, qdotdes3]=joint_planner(Q0(3), Q1(3), 0, tf, time); 
+     [qdes4, qdotdes4]=joint_planner(Q0(4), Q1(4), 0, tf, time); 
+                  
     end
     
     Qdes=[qdes1; qdes2; qdes3; qdes4];
@@ -110,9 +117,9 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
     Qi=Qi+Q*dt; % integrale della posizione nello spazio dei giunti
     
     %% PID controller    
-    K=[20 10 10 1]; % 70 70 12
-    D=[0 0 0 0];
-    I=[0 0 0 0]; % possiamo anche settare a zero il controllo integrale se non serve
+    K=[30 30 40 10];%[100 200 40 50] % 70 70 12
+    D=[0 0 0.07 0];%[3 1 0.1 0]
+    I=[0.1 0 0 0];%[0.01 0.01 0 0] % possiamo anche settare a zero il controllo integrale se non serve
     command=PID_controller(Q, Qdot, Qi, Qdes, Qdotdes, Qides, K, D, I);
     % command sarà di fatto una velocità. 
     
@@ -148,6 +155,11 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
     
     i=i+1;
     
+    if (abs(q1-Q(1))>deg2rad(2) && abs(q2-Q(2))>deg2rad(2) && abs(q3-Q(3))>deg2rad(2) && ...
+            abs(q4-Q(4))>deg2rad(2))
+            controllo=false;
+    end
+    
 end
 
 %% Downsampling
@@ -160,33 +172,34 @@ Qdes_=Qdes_(1:end/sample_number:end,:);
 T=T(1:(end-1)/sample_number:end-1);
 
 %% Plot
+% bisogna rimettere gli angoli in radianti!!!
     figure(1)
     hold on    
-    plot(T,Q_(:,1),'-b','Linewidth',4)    
-    plot(T,Qdes_(:,1),'-r','Linewidth',4)
+    plot(T,rad2deg(Q_(:,1)),'-b','Linewidth',4)    
+    plot(T,rad2deg(Qdes_(:,1)),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 1');
     legend('Q desiderato', 'Q effettivo');
     %  plot(time,q4,'*g','Linewidth',4)
     
     figure(2)
     hold on
-    plot(T,Qdes_(:,2),'-r','Linewidth',4)
-    plot(T,Q_(:,2),'-b','Linewidth',4)
+    plot(T,rad2deg(Qdes_(:,2)),'-r','Linewidth',4)
+    plot(T,rad2deg(Q_(:,2)),'-b','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 2');
     legend('Q desiderato', 'Q effettivo');
     
     figure(3)
     hold on
-    plot(T,Qdes_(:,3),'-r','Linewidth',4)
-    plot(T,Q_(:,3),'-b','Linewidth',4)   
+    plot(T,rad2deg(Qdes_(:,3)),'-r','Linewidth',4)
+    plot(T,rad2deg(Q_(:,3)),'-b','Linewidth',4)   
     title('Andamento effettivo Vs desiderato giunto 3');
     legend('Q desiderato', 'Q effettivo');
     
     
     figure(4)
     hold on
-    plot(T,Qdes_(:,4),'-r','Linewidth',4)
-    plot(T,Q_(:,4),'-b','Linewidth',4)
+    plot(T,rad2deg(Qdes_(:,4)),'-r','Linewidth',4)
+    plot(T,rad2deg(Q_(:,4)),'-b','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 4');
     legend('Q desiderato', 'Q effettivo');
 
