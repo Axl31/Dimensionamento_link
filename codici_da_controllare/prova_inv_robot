@@ -1,0 +1,74 @@
+%% Variables initialization
+
+clear all
+clc
+close all
+traiettoria=[];
+
+T(1)=0.0;
+time=0.0;
+i=2;
+start_time=tic;
+conta=1;
+
+Q0=[-0.123, 0.977, 0.542, -1.396];% il nostro punto B
+Qd=Q0; %aggiunta mia 
+Qides=[0; 0; 0;0];% integrale della posizione desiderata
+Qi=[0; 0; 0;0];
+
+q1_prev=Q0(1);% posizione del giunto nell'istante precedente
+q2_prev=Q0(2);
+q3_prev=Q0(3);
+q4_prev=Q0(4);
+
+Q_=[];
+Qdes_=[];
+
+tf=15;% abbiamo messo quello della nostra traiettoria
+[punto, tempo, PHI, circonferenza1, circonferenza2]=inizializza_simulazione();
+a1=15;
+a2=16;
+a3=15;
+a4=7;
+
+%% Control loop
+while(time<15) % termino il cilco quando state diventa false e lo faccio quando premo un pulsante
+   time=toc(start_time);
+    T(i)=time;
+    dt=T(i)-T(i-1);
+    
+    %% Joint trajectory planner
+    if time<tf
+%     [qdes1 qdotdes1]=joint_planner([Q0(1) Q1(1) 0 tf time]); % polinomio del quinto ordine
+%     [qdes2 qdotdes2]=joint_planner([Q0(2) Q1(2) 0 tf time]); 
+%     [qdes3 qdotdes3]=joint_planner([Q0(3) Q1(3) 0 tf time]); 
+%     [qdes4 qdotdes4]=joint_planner([Q0(4) Q1(4) 0 tf time]); 
+      [xd,xdd,phi,phit]=planner_TOAD(punto, tempo, PHI, time, circonferenza1, circonferenza2);
+      traiettoria=[traiettoria; xd];
+      Qddot =  inv_cin_psd(Qd,[xd,phi]',[xdd,phit]',[a1, a2, a3, a4]);
+      Qd=Qd+Qddot*dt;
+      
+      qdes1=Qd(1);
+      qdes2=Qd(2);
+      qdes3=Qd(3);
+      qdes4=Qd(4);
+      qdotdes1=Qddot(1);
+      qdotdes2=Qddot(2);
+      qdotdes3=Qddot(3);
+      qdotdes4=Qddot(4);
+
+        
+    end
+    
+    Qdes=[qdes1; qdes2; qdes3; qdes4];
+    Qdotdes=[qdotdes1; qdotdes2; qdotdes3; qdotdes4];
+    Qides=Qides+Qdes*dt;
+    Qdes_=[Qdes_;Qdes'];
+    
+    %% Stop simulation 
+    % perchè se il robot impazzisce posso fermarlo premendo il pulsante in
+    % alto dell'unità di controllo
+    
+    conta=conta+1;
+end
+plot(traiettoria(:,1),traiettoria(:,2))
