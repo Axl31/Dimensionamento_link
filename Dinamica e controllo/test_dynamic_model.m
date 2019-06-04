@@ -14,7 +14,8 @@ time=0.0;
 i=2;
 start_time=tic;% prende il valore temporale nell'istante di tempo in cui viene eseguita la riga di codice
 
-Q=[pi/6;pi/6;pi/6;pi/6];%0;0;0;0
+%Q=[pi/6;pi/6;pi/6;pi/6];
+Q=[0;0;0;0];
 Qdot=[0;0;0;0];
 Q2dot=[0;0;0;0];
 
@@ -36,7 +37,7 @@ T(i)=time;
 dt=T(i)-T(i-1);
 
 %% Robot Dynamic Model
-Q2dot=dynamic_model_4dof(tau,Q, Qdot); % ottengo l'accelerazione dalla quale integrando ricavo velocità e posizione
+Q2dot=dynamic_model_4dof_pendolo(tau,Q, Qdot); % ottengo l'accelerazione dalla quale integrando ricavo velocità e posizione
 Qdot=Qdot+Q2dot*dt;
 Q=Q+Qdot*dt;
 
@@ -69,13 +70,15 @@ end
 figure(1)
 title('Simulazione robot soggetto a gravità')
 for i=1:40:size(XY1,1)
-    axis equal      
+    xlim([-60,60]);   
     plot([0 XY1(i,1)],[0 XY1(i,2)],'-r','Linewidth',4)
     hold on
     plot([XY1(i,1) XY2(i,1)],[XY1(i,2) XY2(i,2)],'-b','Linewidth',4)
     plot([XY2(i,1) XY3(i,1)],[XY2(i,2) XY3(i,2)],'-g','Linewidth',4)
     plot([XY3(i,1) XY4(i,1)],[XY3(i,2) XY4(i,2)],'-k','Linewidth',4)
-    axis equal
+    xlim([-50,60]);
+    ylim([-50,30]);
+    
     
     if(MAKE_VIDEO)
         F = getframe(gcf);
