@@ -1,4 +1,7 @@
-%% Calcolo del secondo funzionale di costo ( centro giunti)
+% dw2 = funzionale_dw2(Q,joint_lim)
+% Calcolo del secondo funzionale di costo ( centro giunti)
+% dw2 = (-1/2n)* sommatoria( (qi-qi_m)/(qiMax- qiMin))^2
+
 function dw2 = funzionale_dw2(Q,joint_lim)
 
     %Centri corsa

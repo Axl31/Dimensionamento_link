@@ -1,6 +1,4 @@
-%% Algoritmo di inversione cinematica con l'inversa dello jacobiano per manipolatore planare a 4DoF
-% Dobbiamo imporre quindi necessariamente delle condizioni iniziali per la
-% posizione dei 4 giunti. 
+%% Algoritmo per il calcolo del jacobiano per manipolatore planare a 4DoF
 function J= J_man_plan_4DoF(q,a)
 
 q12 = q(1)+q(2);

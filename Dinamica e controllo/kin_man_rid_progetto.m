@@ -1,6 +1,6 @@
 function [XY1, XY2, XY3, XY4]=kin_man_rid_progetto(q,a)
 % [XY1, XY2, XY3, XY4]=kin_man_rid_progetto(q,a)
-% Serve per calcolare la cinematica diretta
+% Serve per calcolare la posizione con la cinematica diretta
 
 q12 = q(1)+q(2);
 q123 = q12 + q(3);

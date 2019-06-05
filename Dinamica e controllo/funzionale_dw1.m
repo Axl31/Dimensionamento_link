@@ -1,4 +1,7 @@
 %% Calcolo del primo funzionale di costo( misura di manipolabilità)
+% dw1 = funzionale_dw1(Q,a)
+% Calcolo del primo funzionale di costo(misura di manipolabilità)
+% dw1 = sqrt(det(J*J')) 
 function dw1 = funzionale_dw1(Q,a)
 
     q1=Q(1);

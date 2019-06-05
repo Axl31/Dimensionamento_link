@@ -1,8 +1,7 @@
-% clear all
-% close all
-% clc
-
 function [Q_] = simulation_4dof()
+    %[Q_] = simulation_4dof()
+    % simulazione dell'esecuzione della traiettoria
+    
     %% Variables initialization
     a1=15;
     a2=16;
@@ -10,23 +9,26 @@ function [Q_] = simulation_4dof()
     a4=7;
     
 
-    XY_iniziale=[35 25 0]; % il nostro punto B in metri
+    XY_iniziale=[35 25 0]; % il nostro punto B in cm
     XYf=[35 25 pi/6];% è sempre il nostro punto B ma con l'orientamento finale
 
     Qides=[0;0;0;0];
     % devo mettere il primo valore di q4 usato per il calcolo della traiettoria
     q4=-1.3963;
-    Qdes=cinematica_inversa_4gdl(XY_iniziale(1:2),XY_iniziale(3),[a1,a2,a3,a4],q4)';
-    Qdotdes=[0;0;0;0];
-    Q2dotdes=[0;0;0;0];
+    Qdes=cinematica_inversa_4gdl(XY_iniziale(1:2),XY_iniziale(3),[a1,a2,a3,a4],q4)'; 
+    % serve per calcolare i primi valori dei giunti
+    Qdotdes=[0;0;0;0]; % velocità
+    Q2dotdes=[0;0;0;0]; % accelerazioni
 
-    Qi=[0;0;0;0];
-    Q=Qdes;
-    Qdot=[0;0;0;0];
-    Q2dot=[0;0;0;0];
+    Qi=[0;0;0;0]; % integrale della posizione
+    Q=Qdes; % inizializzazione. In questa maniera diciamo che la posizione desiderata coincide
+    %con quella effettiva
+    Qdot=[0;0;0;0]; % velocità effettiva
+    Q2dot=[0;0;0;0]; % accelerazione effettiva
 
-    tau=[0;0;0;0];
-    Q2dot_=[];
+    tau=[0;0;0;0]; %coppia
+    % inizializziamo le variabili dove salavre tutti i dati
+    Q2dot_=[]; 
     Qdot_=[];
     Q_=[];
 
@@ -41,37 +43,29 @@ function [Q_] = simulation_4dof()
 
     XY_err_IK=[];
 
-    tf=15;%% mettere il fine della simulazione della traiettoria( dovrebbero essere 15s)
+    tf=15;% è il tempo totale previsto per l'esecuzione della traiettoria
+    [punto, tempo, phi, circonferenza1, circonferenza2] = inizializza_simulazione();
 
     T(1)=0.0;
     time=0.0;
     i=2;
-    start_time=tic;
-    traiettoria = [];
+    start_time=tic;% prende il valore temporale nell'istante di tempo in cui viene eseguita la riga di codice
+    
 
     %% Control loop
 
     while(time<tf)
-        time=toc(start_time);% qui uso il tempo reale e non il tempo di ciclo come nel caso della
-        %pianificazione di traiettoria
+        time=toc(start_time);% tempo corrente.(In poche parole prendo il tempo che trascorre nell'esecuzione 
+        % tra il comando tic e toc)
         T(i)=time;
-        %pause(0.001)
-        dt=T(i)-T(i-1)
+        dt=T(i)-T(i-1);
 
-        %% Online Trajectory planning
-        IN_XY(1:2)=XY_iniziale(1:2);
-        IN_XY(3:4)=XYf(1:2);
-        IN_XY(5)=0;
-        IN_XY(6)=tf;
-        IN_XY(7)=time;    
-        [punto, tempo, phi, circonferenza1, circonferenza2] = inizializza_simulazione();
+        %% Online Trajectory planning   
         [xd,xdd,phi,phit]=planner_TOAD(punto, tempo, phi, time, circonferenza1, circonferenza2);
-        XY_=xd;
-        traiettoria = [traiettoria; xd];
-        XYdot_=xdd;
-        %theta=pi/3;
-        XY=[XY_'; phi];% XY_iniziale(3)]
-        XYdot=[0;0;0];
+        XY_=xd; % posizione
+        XYdot_=xdd; % derivata della posizione
+        XY=[XY_'; phi];% posa 
+        XYdot=[0;0;0]; % derivata della posa
         %% Online inverse kinematics
 
         Q_dotdes=inv_cin_psd(Qdes,XY,XYdot,[a1,a2,a3,a4]);%psd sta per pseudo-inversa
@@ -95,17 +89,12 @@ function [Q_] = simulation_4dof()
 
 
         tau= PID_controller(Q, Qdot, Qi, Qdes, Qdotdes, Qides, K, D, I);
-        if isnan(tau(1))
-            fxwdtrwgshf = 1
-            i
-        end
         %% Robot dynamic model
         
-        Q2dot=dynamic_model_4dof(tau,Q, Qdot);
-        Qdot=Qdot+Q2dot*dt;
-        Q=Q+Qdot*dt;
+        Q2dot=dynamic_model_4dof(tau,Q, Qdot);% accelerazione effettive dei giunti
+        Qdot=Qdot+Q2dot*dt; % velocità effettive dei giunti
+        Q=Q+Qdot*dt; % posizione effettiva dei giunti
         Qi=Qi+Q*dt;%integrale della posizione attuale
-
 
 
         %% Real variable saving
@@ -129,6 +118,7 @@ function [Q_] = simulation_4dof()
     end
 
     %% Downsampling
+    % sottocampiono per poterli plottare 
     sample_number=200;
 
     Q_=Q_(1:end/sample_number:end,:);
@@ -139,33 +129,33 @@ function [Q_] = simulation_4dof()
     %% Plot
     figure(1)
     %subplot(4,1,1)
-    plot(T,rad2deg(Q_(:,1)),'-b','Linewidth',4)
+    plot(T,Q_(:,1),'-b','Linewidth',4)
     hold on
-    plot(T,rad2deg(Qdes_(:,1)),'-r','Linewidth',4)
+    plot(T,Qdes_(:,1),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 1');
     legend('Q effettivo', 'Q desiderato');
 
     figure(2)
     %subplot(4,1,2)
-    plot(T,rad2deg(Q_(:,2)),'-b','Linewidth',4)
+    plot(T,Q_(:,2),'-b','Linewidth',4)
     hold on
-    plot(T,rad2deg(Qdes_(:,2)),'-r','Linewidth',4)
+    plot(T,Qdes_(:,2),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 2');
     legend('Q effettivo', 'Q desiderato');
 
     figure(3)
     %subplot(4,1,3)    
-    plot(T,rad2deg(Q_(:,3)),'-b','Linewidth',4)
+    plot(T,Q_(:,3),'-b','Linewidth',4)
     hold on
-    plot(T,rad2deg(Qdes_(:,3)),'-r','Linewidth',4)
+    plot(T,Qdes_(:,3),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 3');
     legend('Q effettivo', 'Q desiderato');
 
     figure(4)
     %subplot(4,1,4)
-    plot(T,rad2deg(Q_(:,4)),'-b','Linewidth',4)
+    plot(T,Q_(:,4),'-b','Linewidth',4)
     hold on
-    plot(T,rad2deg(Qdes_(:,4)),'-r','Linewidth',4)
+    plot(T,Qdes_(:,4),'-r','Linewidth',4)
     title('Andamento effettivo Vs desiderato giunto 4');
     legend('Q effettivo', 'Q desiderato');
 
@@ -196,7 +186,7 @@ function [Q_] = simulation_4dof()
     passo = 40;
     for i=1:passo:size(XY1,1)
         axis equal
-        plot(traiettoria(1:passo:end,1), traiettoria(1:passo:end,2),'-k','Linewidth',4)
+        plot(XY(1:passo:end,1), XY(1:passo:end,2),'-k','Linewidth',4)
 
         hold on
         plot([0 XY1(i,1)],[0 XY1(i,2)],'-r','Linewidth',4)    
@@ -209,7 +199,6 @@ function [Q_] = simulation_4dof()
             F = getframe(gcf);
             writeVideo(motion,F);
         end
-        %pause(0.5)
         hold off
 
     end

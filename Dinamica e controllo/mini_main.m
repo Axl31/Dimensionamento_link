@@ -27,6 +27,7 @@ elseif strip(lower(str)) == "p"
     % simulazione del posizionamento
     test_PIDcontroller();
 else
+    % simulazione dell'esecuzione della traiettoria
     Q_=simulation_4dof();
 end
 

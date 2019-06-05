@@ -71,7 +71,9 @@ function []= test_PIDcontroller()
     Q_=[Q_;Q'];
 
     [xy_ik1, xy_ik2, xy_ik3, xy_ik4]=kin_man_rid_progetto(Q,[a1,a2,a3,a4]);
+    % Serve per calcolare la posizione con la cinematica diretta
 
+    % Ci salviamo la posizione di ogni link
         XY_IK1=[XY_IK1; xy_ik1'];
         XY_IK2=[XY_IK2; xy_ik2'];
         XY_IK3=[XY_IK3; xy_ik3'];
@@ -81,9 +83,11 @@ function []= test_PIDcontroller()
     end
 
     %% Downsampling
+    % Riduciamo il numero di campioni per poterli plottare 
     sample_number=200;
 
-    Q_=Q_(1:floor(end/sample_number):end,:);
+    Q_=Q_(1:floor(end/sample_number):end,:); % il floor serve per arrotondare per difetto 
+    % cosi da ottenere un indice intero 
     T=T(1:floor((end-1)/sample_number):end-1);
 
     Qdes1_=ones(length(Q_(:,1)),1)*Qdes(1);
