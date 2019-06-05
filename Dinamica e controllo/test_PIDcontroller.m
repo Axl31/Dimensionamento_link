@@ -2,26 +2,30 @@
 % close all
 % clc
 
-function []= test_PIDcontroller(joints)
+function []= test_PIDcontroller()
+    % test_PIDcontroller()
+    % simulazione del posizionamento
     %% Variables initialization
     a1=15;
     a2=16;
     a3=15;
     a4=7;
-    %load('joints.mat');
+    
+    load('joints.mat'); % carico i valori degli angoli di giunto calcolati da check_trajectory_progetto
 
 
     Qi=[0;0;0;0];% Q integrata. Integrale della posizione attuale. Lo stiamo solo inizializzando
-    Q=[pi/6;pi/6;pi/6;pi/6];%[-pi/2;0;0;0]
-    Qdot=[0;0;0;0];
-    Q2dot=[0;0;0;0];
+    Q=[0;0;0;0]; % posizione iniziale manipolatore steso
+    Qdot=[0;0;0;0]; % velocità
+    Q2dot=[0;0;0;0]; % accelerazione
 
-    Qides=[0;0;0;0];
-    Qdes=[joints(1,1);joints(1,2);joints(1,3);joints(1,4)];% da modificare con il primo punto traiettoria da invertire.
-    Qdotdes=[0;0;0;0];
-    Q2dotdes=[0;0;0;0];
+    Qides=[0;0;0;0]; % integrale della posizione desiderata
+    Qdes=[joints(1,1);joints(1,2);joints(1,3);joints(1,4)];% valori angoli di giunto  per il punto B 
+    Qdotdes=[0;0;0;0]; % velocità desiderata
+    Q2dotdes=[0;0;0;0]; % accelerazione desiderata
 
-    tau=[0;0;0;0];
+    tau=[0;0;0;0]; % coppia
+    % inizializziamo le seguenti variabili per poi salvarci tutti i dati
     Q2dot_=[];
     Qdot_=[];
     Q_=[];
@@ -34,29 +38,34 @@ function []= test_PIDcontroller(joints)
     T(1)=0.0;
     time=0.0;
     i=2;
-    start_time=tic;
+    start_time=tic;% prende il valore temporale nell'istante di tempo in cui viene eseguita la riga di codice
+
 
     %% Control loop
-    while(time<15)%15  
-    time=toc(start_time);    
+    while(time<5)  
+    time=toc(start_time); % tempo corrente.(In poche parole prendo il tempo che trascorre nell'esecuzione 
+% tra il comando tic e toc)
     T(i)=time; 
     dt=T(i)-T(i-1);
-    Qides=Qides+Qdes*dt;
+    Qides=Qides+Qdes*dt; % integrazione della posizione desiderata
 
     %% PID controller
 
-    K=[0.01 0.01 0.01 0.01];%20 10 2 1
-    D=[0.2 0.2 0.2 0.2]*0.01;%2 1 0.8 0.4
-    I=[0.5 0.1 0.1 0.1]*0.01;%8 4 0.8 0.4
-
+    K=[10000 5000 90000 8];%20 10 2 1
+    D=[0.1 0 0.1 0];%2 1 0.8 0.4
+    I=[0.1 0 0 0];%8 4 0.8 0.4
+    
     tau= PID_controller(Q, Qdot, Qi, Qdes, Qdotdes, Qides, K, D, I);
+    
 
     %% Robot dynamic model
-    Q2dot=dynamic_model_4dof(tau,Q, Qdot);
-    Qdot=Qdot+Q2dot*dt;
-    Q=Q+Qdot*dt;
-    Qi=Qi+Q*dt;
+    Q2dot=dynamic_model_4dof(tau,Q, Qdot); % utilizzo il modello dinamico diretto per calcolare 
+    % l'accelerazione dei giunti
+    Qdot=Qdot+Q2dot*dt; % ottengo la velocità integrando l'accelerazione
+    Q=Q+Qdot*dt; % ottengo la posizione integrando la velocità
+    Qi=Qi+Q*dt; % integro la posizione per l'azione integrativa del controllo
 
+    % Salvo le variabili in un unico vettore per plottarli in seguito
     Q2dot_=[Q2dot_;Q2dot'];
     Qdot_=[Qdot_;Qdot'];
     Q_=[Q_;Q'];

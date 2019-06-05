@@ -1,8 +1,7 @@
-% clear all
-% close all
-% clc
-
+% simulazione pendolo
 function [] = test_dynamic_model()
+% test_dynamic_model()
+% Simulazione effetto gravitazionale lungo l'asse y sul manipolatore quando è fermo 
 %% Variables initialization
 a1=15;
 a2=16;
@@ -14,13 +13,13 @@ time=0.0;
 i=2;
 start_time=tic;% prende il valore temporale nell'istante di tempo in cui viene eseguita la riga di codice
 
-%Q=[pi/6;pi/6;pi/6;pi/6];
-Q=[0;0;0;0];
-Qdot=[0;0;0;0];
-Q2dot=[0;0;0;0];
+Q=[0;0;0;0]; % posizione iniziale ( manipolatore tutto steso)
+Qdot=[0;0;0;0]; % velocità
+Q2dot=[0;0;0;0]; % accelerazione
 
-tau=[0;0;0;0];
-Q2dot_=[];
+tau=[0;0;0;0]; % coppia
+% inizializzo le seguenti variabili per poi salvarci tutti i dati
+Q2dot_=[]; 
 Qdot_=[];
 Q_=[];
 
@@ -30,11 +29,11 @@ Q_=[];
  XY4=[];
 
 %% Simulation loop
-while(time<10)  
-time=toc(start_time);   % tempo corrente. in poche parole prendo il tempo che trascorre nell'esecuzione 
-% tra il comando tic e toc
+while(time<10) % 10s tempo della simulazione 
+time=toc(start_time); % tempo corrente.(In poche parole prendo il tempo che trascorre nell'esecuzione 
+% tra il comando tic e toc)
 T(i)=time; 
-dt=T(i)-T(i-1);
+dt=T(i)-T(i-1); % passo temporale effettivo ( ci serve per l'integrazione numerica)
 
 %% Robot Dynamic Model
 Q2dot=dynamic_model_4dof_pendolo(tau,Q, Qdot); % ottengo l'accelerazione dalla quale integrando ricavo velocità e posizione

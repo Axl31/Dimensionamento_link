@@ -1,6 +1,11 @@
 
 clearLCD(mylego);% cancello tutto quello che ho sullo schermo
+close all;
+clc;
 
+clear Q_;
+clear Qdes_;
+clear T;
 
 state = true; % variabile di controllo del loop che faccio dopo
 mymotor1.Speed =0.0;
@@ -8,7 +13,7 @@ mymotor2.Speed =0.0;
 mymotor3.Speed =0.0;
 mymotor4.Speed =0.0;
 
-Q=[0 0 0 0];
+%Q=[0 0 0 0];
 
 start(mymotor1);
 start(mymotor2);
@@ -23,7 +28,20 @@ time=0.0;
 i=2;
 start_time=tic;
 
-Q0=(-1)*[-0.123, 0.977, 0.542, -1.396];% il nostro punto B
+a1=15;
+a2=16;
+a3=15;
+a4=7;
+XY_iniziale=[35 25 0]; % il nostro punto B in metri
+XYf=[35 25 pi/6];% è sempre il nostro punto B ma con l'orientamento finale
+
+    
+% devo mettere il primo valore di q4 usato per il calcolo della traiettoria
+q4=-1.3963;
+Q0=cinematica_inversa_4gdl(XY_iniziale(1:2),XY_iniziale(3),[a1,a2,a3,a4],q4)';
+
+
+%Q0=[-0.123, 0.977, 0.542, -1.396];% il nostro punto B
 Qd=Q0; %aggiunta mia 
 %Q1=[3*pi ,3*pi, 3*pi, 3*pi]; % 3/2pi % a noi non serve, serviva ai prof
 %per la traiettoria a segmento
@@ -40,10 +58,11 @@ Qdes_=[];
 
 tf=15;% abbiamo messo quello della nostra traiettoria% 5
 [punto, tempo, PHI, circonferenza1, circonferenza2]=inizializza_simulazione();
-a1=15;
-a2=16;
-a3=15;
-a4=7;
+%a1=15;
+%a2=16;
+%a3=15;
+%a4=7;
+traiettoria=[];
 
 %% Control loop
 while(state) % termino il cilco quando state diventa false e lo faccio quando premo un pulsante
@@ -58,7 +77,8 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
 %     [qdes3 qdotdes3]=joint_planner([Q0(3) Q1(3) 0 tf time]); 
 %     [qdes4 qdotdes4]=joint_planner([Q0(4) Q1(4) 0 tf time]); 
       [xd,xdd,phi,phit]=planner_TOAD(punto, tempo, PHI, time, circonferenza1, circonferenza2);
-      Qddot = inv_cin_psd(Qd,[xd,phi]',[xdd,phit]',[a1, a2, a3, a4]);
+      traiettoria=[traiettoria, xd];
+      Qddot =  inv_cin_psd(Qd,[xd,phi]',[xdd,phit]',[a1, a2, a3, a4]);
       Qd=Qd+Qddot*dt;
       
       qdes1=Qd(1);
@@ -110,16 +130,16 @@ while(state) % termino il cilco quando state diventa false e lo faccio quando pr
     Qi=Qi+Q*dt; % integrale della posizione nello spazio dei giunti
     
     %% PID controller    
-    K=[20 10 10 1]; % 70 70 12
+    K=[1 1 1 1]; % 70 70 12
     D=[0 0 0 0];
     I=[0 0 0 0]; % possiamo anche settare a zero il controllo integrale se non serve
     command=PID_controller(Q, Qdot, Qi, Qdes, Qdotdes, Qides, K, D, I);
     % command sarà di fatto una velocità. 
     
-    mymotor1.Speed = command(1)*2;
-    mymotor2.Speed = command(2)*2;
-    mymotor3.Speed = command(3)*(36/22);
-    mymotor4.Speed = command(4)*(36/22);
+    mymotor1.Speed = command(1);
+    mymotor2.Speed = command(2);
+    mymotor3.Speed = command(3);
+    mymotor4.Speed = command(4);
     
     %% Write joint angles on the brick LCD
     % scrivo il valore delle variabili di giunto sullo schermo dell'unità
@@ -162,31 +182,32 @@ T=T(1:(end-1)/sample_number:end-1);
 %% Plot
     figure(1)
     hold on    
-    plot(T,Q_(:,1),'-b','Linewidth',4)    
-    plot(T,Qdes_(:,1),'-r','Linewidth',4)
-    title('Andamento effettivo Vs desiderato giunto 1');
+    plot(T,rad2deg(Qdes_(:,1)),'-r','Linewidth',4)    
+    plot(T,rad2deg(Q_(:,1)),'-b','Linewidth',4)
+    title('Andamento desiderato Vs effettivo giunto 1');
     legend('Q desiderato', 'Q effettivo');
     %  plot(time,q4,'*g','Linewidth',4)
+    xlabel('Tempo [s]')
     
     figure(2)
     hold on
-    plot(T,Qdes_(:,2),'-r','Linewidth',4)
-    plot(T,Q_(:,2),'-b','Linewidth',4)
-    title('Andamento effettivo Vs desiderato giunto 2');
+    plot(T,rad2deg(Qdes_(:,2)),'-r','Linewidth',4)
+    plot(T,rad2deg(Q_(:,2)),'-b','Linewidth',4)
+    title('Andamento desiderato Vs effettivo giunto 2');
     legend('Q desiderato', 'Q effettivo');
     
     figure(3)
     hold on
-    plot(T,Qdes_(:,3),'-r','Linewidth',4)
-    plot(T,Q_(:,3),'-b','Linewidth',4)   
-    title('Andamento effettivo Vs desiderato giunto 3');
+    plot(T,rad2deg(Qdes_(:,3)),'-r','Linewidth',4)
+    plot(T,rad2deg(Q_(:,3)),'-b','Linewidth',4)   
+    title('Andamento desiderato Vs effettivo giunto 3');
     legend('Q desiderato', 'Q effettivo');
     
     
     figure(4)
     hold on
-    plot(T,Qdes_(:,4),'-r','Linewidth',4)
-    plot(T,Q_(:,4),'-b','Linewidth',4)
-    title('Andamento effettivo Vs desiderato giunto 4');
+    plot(T,rad2deg(Qdes_(:,4)),'-r','Linewidth',4)
+    plot(T,rad2deg(Q_(:,4)),'-b','Linewidth',4)
+    title('Andamento desiderato Vs effettivo giunto 4');
     legend('Q desiderato', 'Q effettivo');
 

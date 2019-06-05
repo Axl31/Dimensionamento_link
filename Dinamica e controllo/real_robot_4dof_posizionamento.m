@@ -45,7 +45,22 @@ i=2;
 start_time=tic;
 
 Q0=[0, 0, 0, 0]; 
-Q1=(-1)*[-0.123, 0.977, 0.542, -1.396]; % è il nostro punto B
+%Q1=(-1)*[-0.123, 0.977, 0.542, -1.396]; % è il nostro punto B
+
+
+a1=15;
+a2=16;
+a3=15;
+a4=7;
+XY_iniziale=[35 25 0]; % il nostro punto B in metri
+XYf=[35 25 pi/6];% è sempre il nostro punto B ma con l'orientamento finale
+
+    
+% devo mettere il primo valore di q4 usato per il calcolo della traiettoria
+q4=-1.3963;
+Q1=cinematica_inversa_4gdl(XY_iniziale(1:2),XY_iniziale(3),[a1,a2,a3,a4],q4)';
+
+%Q1=[-0.123, 0.977, 0.542, -1.396];
 Qides=[0; 0; 0;0];% integrale della posizione desiderata
 Qi=[0; 0; 0;0];
 
@@ -59,10 +74,10 @@ Qdes_=[];
 
 tf=5;% abbiamo messo per il posizionamento 5 secondi
 
-a1=15;
-a2=16;
-a3=15;
-a4=7;
+%a1=15;
+%a2=16;
+%a3=15;
+%a4=7;
 
 %% Control loop
 while(state && controllo) % termino il cilco quando state diventa false e lo faccio quando premo un pulsante
@@ -117,16 +132,16 @@ while(state && controllo) % termino il cilco quando state diventa false e lo fac
     Qi=Qi+Q*dt; % integrale della posizione nello spazio dei giunti
     
     %% PID controller    
-    K=[30 30 40 10];%[100 200 40 50] % 70 70 12
-    D=[0 0 0.07 0];%[3 1 0.1 0]
-    I=[0.1 0 0 0];%[0.01 0.01 0 0] % possiamo anche settare a zero il controllo integrale se non serve
+    K=[30 60 67 5];%[100 200 40 50] % 70 70 12
+    D=[0.01 0 0 0.05];%[3 1 0.1 0]
+    I=[0.15 0.15 0.15 0];%[0.01 0.01 0 0] % possiamo anche settare a zero il controllo integrale se non serve
     command=PID_controller(Q, Qdot, Qi, Qdes, Qdotdes, Qides, K, D, I);
     % command sarà di fatto una velocità. 
     
-    mymotor1.Speed = command(1)*2;
-    mymotor2.Speed = command(2)*2;
-    mymotor3.Speed = command(3)*(36/22);
-    mymotor4.Speed = command(4)*(36/22);
+    mymotor1.Speed = command(1);
+    mymotor2.Speed = command(2);
+    mymotor3.Speed = command(3);
+    mymotor4.Speed = command(4);
     
     %% Write joint angles on the brick LCD
     % scrivo il valore delle variabili di giunto sullo schermo dell'unità
@@ -155,9 +170,13 @@ while(state && controllo) % termino il cilco quando state diventa false e lo fac
     
     i=i+1;
     
-    if (abs(q1-Q(1))>deg2rad(2) && abs(q2-Q(2))>deg2rad(2) && abs(q3-Q(3))>deg2rad(2) && ...
-            abs(q4-Q(4))>deg2rad(2))
+    if (abs(q1-Q1(1))<deg2rad(2) && abs(q2-Q1(2))<deg2rad(2) && abs(q3-Q1(3))<deg2rad(2) && ...
+            abs(q4-Q1(4))<deg2rad(2))
             controllo=false;
+            stop(mymotor1);
+            stop(mymotor2);
+            stop(mymotor3);
+            stop(mymotor4);
     end
     
 end
@@ -175,9 +194,9 @@ T=T(1:(end-1)/sample_number:end-1);
 % bisogna rimettere gli angoli in radianti!!!
     figure(1)
     hold on    
-    plot(T,rad2deg(Q_(:,1)),'-b','Linewidth',4)    
-    plot(T,rad2deg(Qdes_(:,1)),'-r','Linewidth',4)
-    title('Andamento effettivo Vs desiderato giunto 1');
+    plot(T,rad2deg(Qdes_(:,1)),'-r','Linewidth',4)    
+    plot(T,rad2deg(Q_(:,1)),'-b','Linewidth',4)
+    title('Andamento desiderato Vs effettivo giunto 1');
     legend('Q desiderato', 'Q effettivo');
     %  plot(time,q4,'*g','Linewidth',4)
     
@@ -185,14 +204,14 @@ T=T(1:(end-1)/sample_number:end-1);
     hold on
     plot(T,rad2deg(Qdes_(:,2)),'-r','Linewidth',4)
     plot(T,rad2deg(Q_(:,2)),'-b','Linewidth',4)
-    title('Andamento effettivo Vs desiderato giunto 2');
+    title('Andamento desiderato Vs effettivo giunto 2');
     legend('Q desiderato', 'Q effettivo');
     
     figure(3)
     hold on
     plot(T,rad2deg(Qdes_(:,3)),'-r','Linewidth',4)
     plot(T,rad2deg(Q_(:,3)),'-b','Linewidth',4)   
-    title('Andamento effettivo Vs desiderato giunto 3');
+    title('Andamento desiderato Vs effettivo giunto 3');
     legend('Q desiderato', 'Q effettivo');
     
     
@@ -200,6 +219,6 @@ T=T(1:(end-1)/sample_number:end-1);
     hold on
     plot(T,rad2deg(Qdes_(:,4)),'-r','Linewidth',4)
     plot(T,rad2deg(Q_(:,4)),'-b','Linewidth',4)
-    title('Andamento effettivo Vs desiderato giunto 4');
+    title('Andamento desiderato Vs effettivo giunto 4');
     legend('Q desiderato', 'Q effettivo');
 
