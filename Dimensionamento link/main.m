@@ -12,10 +12,11 @@ clc; clear; close all;
 %al punto A seguendo il primo arco di circonferenza in senso antiorario, e
 %il tempo finale di esecuzione della traiettoria;
 %'phi' è una struct che ci da l'orientamento iniziale e finale;
-% 'circonferenza'(1/2) ci dà una struct contenente il raggio dell'arco di
+% 'circonferenza'(1 e 2) ci dà una struct contenente il raggio dell'arco di
 % circonferenza e il suo centro. In particolare la circonferenza 1 è la più
 % piccola.
 
+%% GENERAZIONE TRAIETTORIA
 %inizializzo i vettori 'xd', ovvero l'ascissa desiderata della traiettoria,
 %'yd' l'ordinata desiderata e 'phid' l'orientamento desiderato. I tre
 %elementi compongono la posa desiderata dell'organo terminale.
@@ -42,11 +43,13 @@ if strip(lower(str)) == "s" %codice simulink
         'StopTime',num2str(tempo.finale2),...
         'FixedStep',num2str(dt));
     
-    xd = simulazione.XD(:,1);
-    yd = simulazione.XD(:,2);
-    phid = simulazione.PHI;
-    t = simulazione.tout;
+    xd = simulazione.XD(:,1);% vettore xd simulazione
+    yd = simulazione.XD(:,2);% vettore yd simulazione
+    phid = simulazione.PHI;% vettore orientamento simulazione
+    t = simulazione.tout;% vettore tempi simulazione
 else %codice matlab:
+    % inizializzo le variabili con la stessa lunghezza del ciclo cosicche
+    % non cambino dimensione 
     t = (0 : dt : tempo.finale2)'; %definisco il vettore dei tempi
     XD = zeros(length(t), 2); %inizializzo il vettore della posizione desiderata
     XDD = zeros(length(t), 2); %inizializzo il vettore della derivata della posizione desiderata
@@ -55,7 +58,7 @@ else %codice matlab:
     for i = 1 : length(t) %faccio un ciclo con iterazioni date dal passo temporale precedentemente scelto
         %richiamo la funzione 'planner_TOAD' che dati in ingresso le struct
         %'punto', 'tempo', 'phi', 'circonferenza1 e 2' e il tempo relativo
-        %all'iterazione considerata, mi dà in uscita la posizione
+        %all'iterazione considerata (istante), mi dà in uscita la posizione
         %desiderata e l'orientamento, comprese le loro derivate
  [XD(i,:),XDD(i,:), PHI(i),PHID(i)] = ...
             planner_TOAD(punto, tempo, phi, t(i), circonferenza1, circonferenza2); 
@@ -67,12 +70,14 @@ else %codice matlab:
     phid = PHI;
 end
 
+%% CALCOLO PUNTI NOTEVOLI 
 %utilizzo la funzione calcola_punti_traiettoria, per avere in uscita delle
 %posizione e orientamente opportunatamente scelti per il dimensionamento
 %del link, ovvero punti particolari in cui vi è la necessità di verifica
 %che il robot possa passarci:
 [p, theta] = calcola_punti_traiettoria(xd, yd, phid);
 
+%% OTTIMIZZA LINK
 %richiamo quindi la funzione 'ottimizza_link' che date in ingresso le pose
 %scelte, mi dà in uscita il link ottimale secondo i funzionali definiti a
 %lezione e il vettore delle quaterne di link che permettono al robot di

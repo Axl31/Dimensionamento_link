@@ -32,9 +32,9 @@ function [link,link_scelti] = ottimizza_link(p, theta)
     
     conta_iterazioni = 0;
     barra = waitbar(0,'please wait', 'Name', 'Barra di caricamento');
-    
-    %definisco i cicli per variare i link e q4 così da trovare le quaterne
-    %desiderate
+     
+    count=0;
+
     for a1 = link_lim(1,1) : passo_crescita : link_lim(1,2)
         for a2 = link_lim(2,1) : passo_crescita : link_lim(2,2)
             for a3 = link_lim(3,1) : passo_crescita : link_lim(3,2)
@@ -43,54 +43,57 @@ function [link,link_scelti] = ottimizza_link(p, theta)
                     progress = conta_iterazioni/iterazioni_tot;
                     waitbar(progress, barra, sprintf("Running %.1f%%", progress * 100));
                     conta_iterazioni = conta_iterazioni + 1;
-                        
-                    trovato = false;
-                    q4 = joint_lim(4,1);%inizializzo q4 dal suo valore limite
                     
-                    while q4 <= joint_lim(4,2) && ~trovato
-                    %for q4 = joint_lim(4,1) : resolution_q : joint_lim(4,2)
-                        
-                        %funzione di controllo per le dimensioni dei link,
-                        %dà in output true se la combinazione di link
-                        %permette al manipolatore di percorrere tutta la
-                        %traiettoria datagli in pasto (ovvero i punti
-                        %precedentemente selezionati)
-                        check = controlla_dimensioni_link(p, theta, q4, [a1,a2,a3,a4], joint_lim);
-                        %ulteriore scrematura per non considerare i link
-                        %troppo diversi
-                        check2= controlla_differenza_link(a2,a3,a4);
+                    check2= controlla_differenza_link(a2,a3,a4);
+                    
+                    if(check2)
+                        trovato = false;
+                        q4 = joint_lim(4,1);
 
-                        %Ciclo if
-                        %& se check e check2 sono veri inserisco in link a1,a2,a3 e se voglio
-                        %conservare anche quelli precedenti (dove c'è il check vero)
-                        %scrivo links=[links; a1...]
-                        if (check && check2)
-                            link_scelti = cat(1, link_scelti, [a1, a2, a3, a4]);
-                            %& devo poi realizzare quella funzione che mi va a
-                            % minimizzare quelle funzioni di costo che ho scelto prima
+                        while q4 < joint_lim(4,2) && ~trovato
+                        %for q4 = joint_lim(4,1) : resolution_q : joint_lim(4,2)
 
-                            %& prima funzione di costo è la somma dei link quindi creo
-                            %una variabile contenente le somme di tutti i link
-                            sum_link = a1+a2+a3+a4;
-                            somma_link = cat(1, somma_link, sum_link);
-                            %& mi permettono di trovare il massimo delle combinazioni
-                            %dei tre link
-                            max_1234=max([abs(a1-(sum_link)/4),abs(a2-(sum_link)/4),abs(a3-(sum_link)/4),abs(a4-(sum_link)/4)]);
-
-                            differenza_link = cat(1, differenza_link, max_1234);
+                            check = controlla_dimensioni_link(p, theta, q4, [a1,a2,a3,a4], joint_lim);
                             
-                            trovato = true;
+
+                            %Ciclo if
+                            %& se check è vero inserisco in link a1,a2,a3 e se voglio
+                            %conservare anche quelli precedenti (dove c'è il check vero)
+                            %scrivo links=[links; a1...]
+                            if check 
+                                link_scelti = cat(1, link_scelti, [a1, a2, a3, a4]);
+                                %& devo poi realizzare quella funzione che mi va a
+                                % minimizzare quelle funzioni di costo che ho scelto prima
+
+
+
+                                %& prima funzione di costo è la somma dei link quindi creo
+                                %una variabile contenente le somme di tutti i link
+                                count= count+1;
+                                sum_link = sum(link_scelti(count,:));
+                                somma_link = cat(1, somma_link, sum_link);
+                                %& mi permettono di trovare il massimo delle combinazioni
+                                %dei tre link
+                                max_1234=max([abs(link_scelti(count,1)-(sum_link)/4),abs(link_scelti(count,2)-(sum_link)/4),abs(link_scelti(count,3)-(sum_link)/4),abs(link_scelti(count,4)-(sum_link)/4)]);
+
+
+                                differenza_link = cat(1, differenza_link, max_1234);
+
+                                trovato = true;
+                            else
+                            %& c'è _ .Qui metto tutte le combinazioni che ho trovato anche
+                            %quelle che non vanno bene
+                                q4 = q4 + resolution_q;
+                                link_scartati = cat(1, link_scartati, [a1, a2, a3, a4]);
+                            end
                         end
-                        %& c'è _ .Qui metto tutte le combinazioni che ho trovato anche
-                        %quelle che non vanno bene
-                        q4 = q4 + resolution_q;
-                        link_scartati = cat(1, link_scartati, [a1, a2, a3, a4]);
+                    
                     end
                 end
             end
         end
     end
-    
+   
     close(barra);
     
     %Vengono applicate delle funzioni di costo
